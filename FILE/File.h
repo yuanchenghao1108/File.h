@@ -84,7 +84,6 @@ int GetFileList(const char* path,std::list<std::string>& file_list) {
 			//printf("%s\n", fileinfo.name);
 			file_list.push_back(fileinfo.name);
 		}
-		//找到的文件的文件名
 	} while (!_findnext(handle, &fileinfo));
 	// --------------------------------------------------------
 	_findclose(handle);
