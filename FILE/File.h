@@ -31,7 +31,7 @@ bool OpenFile(const char* file_name,bool bwrite) {
 }
 
 // -------------------------------------------------------------------------------
-bool __fastcall Try_Open_File(const char* file_name,bool bwrite){
+bool __fastcall IsFileExist(const char* file_name,bool bwrite){
 	// --------------------------------------------------------
 	if (!file_name || (file_name == '\0')) {
 		return false;
