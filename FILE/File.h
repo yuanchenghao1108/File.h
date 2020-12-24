@@ -13,21 +13,28 @@ Time:2020/12/10
 #include <io.h>
 #include<list>
 #include <direct.h>
+/*
+mode:
+ios::app|ios::out    	 	:如果没有文件则创建文件，如果有文件，则在文件尾追加
+ios::ate|ios::out     		:如果没有文件则创建文件，如果有，则清空文件。
+ios::ate|ios::out|ios::in       :如果没有文件，则打开失败，有文件则定位到文件尾
+*/
 // -------------------------------------------------------------------------------
-bool OpenFile(const char* file_name,bool bwrite) {
+bool LoadFileToStream(const char* file_name,fstream& stream,int mode) {
 	// --------------------------------------------------------
 	if (!file_name || (file_name == '\0')) {
 		return false;
 	}
 	// --------------------------------------------------------
-	std::ifstream ifile;
+	stream.clear();
 	// --------------------------------------------------------
-	ifile.open(file_name);
+	srream.open(file_name,mode);
 	// --------------------------------------------------------
-	if (!ifile.is_open()) {
+	if (!srream.is_open()) {
 		return false;
 	}
 	// --------------------------------------------------------
+	return true;
 }
 
 // -------------------------------------------------------------------------------
