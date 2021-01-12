@@ -21,6 +21,7 @@ void __fastcall TINI::_init_all_vars(bool is_first) {
 	// --------------------------------------------------------
 	memset(m_szKey, 0, CONFIGLEN);
 	m_Map.clear();
+	Text_list.clear();
 	// --------------------------------------------------------
 }
 
@@ -54,22 +55,28 @@ int __fastcall TINI::LoadFile(const char* filename) {
 	}
 	// --------------------------------------------------------
 	m_Map.clear();
+	Text_list.clear();
 	// --------------------------------------------------------
 	while (fgets(strLine, CONFIGLEN, m_fp)) {
 		// ----------------------------------------------------
 		szLine.assign(strLine);
 		// ----------------------------------------------------
-		// 判断注释
-		if (_trim(szLine.c_str()).find_first_not_of(";") == 1) {
-			continue;
-		}
-		// ----------------------------------------------------
 		// 删除字符串中的非必要字符
 		if (nLeftPos = szLine.find("\n"), string::npos != nLeftPos) {
+			Text_list.push_back(szLine);
 			szLine.erase(nLeftPos, 1);
+		}
+		else {
+			snprintf(m_szKey, CONFIGLEN, "%s\n", strLine);
+			Text_list.push_back(m_szKey);
 		}
 		if (nLeftPos = szLine.find("\r"), string::npos != nLeftPos) {
 			szLine.erase(nLeftPos, 1);
+		}
+		// ----------------------------------------------------
+		// 判断注释
+		if (_trim(szLine.c_str()).find_first_not_of(";") == 1) {
+			continue;
 		}
 		// ----------------------------------------------------
 		// 判断是否是主键
@@ -123,12 +130,47 @@ int __fastcall TINI::LoadFile(const char* filename) {
 
 // -------------------------------------------------------------------------------
 /******************************************************************************
+ * 功  能:保存文件
+ * 参  数：filename			文件名
+ * 返回值：
+ * 备  注：
+ ***************************************************************************** */
+void __fastcall TINI::SaveToFile(const char* filename) {
+	// --------------------------------------------------------
+	UnLoadFile();
+	// --------------------------------------------------------
+	m_fp = fopen(filename, "wb+");
+	if (m_fp == NULL) {
+		// ----------------------------------------------------
+		printf("create inifile %s error!\n", filename);
+		// ----------------------------------------------------
+		return;
+	}
+	// --------------------------------------------------------
+	// snprintf(m_szKey, CONFIGLEN, "%s", "dfgdfgdfs");
+	// fwrite(m_szKey, sizeof(char), strlen(m_szKey), m_fp);
+	for (list<string>::iterator iter = Text_list.begin();
+	iter != Text_list.end(); iter++) {
+		// ----------------------------------------------------
+		snprintf(m_szKey, CONFIGLEN, "%s", string(*iter).c_str());
+		fwrite(m_szKey, sizeof(char), strlen(m_szKey), m_fp);
+		// ----------------------------------------------------
+	} // for-loop
+	// --------------------------------------------------------
+	fclose(m_fp);
+	// --------------------------------------------------------
+	_init_all_vars(false);
+	// --------------------------------------------------------
+}
+
+// -------------------------------------------------------------------------------
+/******************************************************************************
  * 功  能：关闭文件函数
  * 参  数：无
  * 返回值：
  * 备  注：
  ***************************************************************************** */
-INI_RES __fastcall TINI::UnLoadFile(void) {
+int __fastcall TINI::UnLoadFile(void) {
 	// --------------------------------------------------------
 	if (m_fp != NULL) {
 		fclose(m_fp);
@@ -306,16 +348,98 @@ void __fastcall TINI::WriteString(const char* mAttr, const char* cAttr,
 		// ----------------------------------------------------
 	}
 	// --------------------------------------------------------
+	// 1. find  Section
+	int start_pos = 0;
+	list<string>::iterator section_iter = Text_list.end();
+	snprintf(m_szKey, CONFIGLEN, "[%s]", mAttr);
+	for (list<string>::iterator iter = Text_list.begin();
+	iter != Text_list.end(); iter++) {
+		// ----------------------------------------------------
+		string temp = *iter;
+		if (temp.find(m_szKey) != temp.npos) {
+			section_iter = iter;
+			break;
+		}
+		// ----------------------------------------------------
+	} // for-loop
+	// --------------------------------------------------------
+	// 2.find Key-Value
+	if (section_iter != Text_list.end()) { // find success  Section
+		// ----------------------------------------------------
+		list<string>::iterator key_iter = Text_list.end();
+		snprintf(m_szKey, CONFIGLEN, "%s=%s", cAttr, value);
+		// ----------------------------------------------------
+		for (list<string>::iterator iter = section_iter;
+		iter != Text_list.end(); iter++) {
+			string temp = *iter;
+			if ((temp.find("=") != temp.npos) &&
+				(temp.find(cAttr) != temp.npos)) { // find Key  Success
+				temp.replace(0, temp.find("\n"), m_szKey);
+				*iter = temp;
+				key_iter = iter;
+				break;
+			}
+		}
+		// ----------------------------------------------------
+		if (key_iter == Text_list.end()) { // not find Key
+			section_iter++;
+			snprintf(m_szKey, CONFIGLEN, "%s=%s\n", cAttr, value);
+			Text_list.insert(section_iter, m_szKey);
+		}
+		// ----------------------------------------------------
+	}
+	else { // not find  Section
+		// ----------------------------------------------------
+		snprintf(m_szKey, CONFIGLEN, "[%s]\n", mAttr);
+		Text_list.push_back(m_szKey);
+		// ----------------------------------------------------
+		snprintf(m_szKey, CONFIGLEN, "%s=%s\n", cAttr, value);
+		Text_list.push_back(m_szKey);
+		// ----------------------------------------------------
+	}
+	// --------------------------------------------------------
 }
 
 // -------------------------------------------------------------------------------
+/******************************************************************************
+ *功  能：设置键值的整形
+ * 参  数：
+ *mAttr                     主键
+ *cAttr                     子键
+ *value				       设定值
+ * 返回值：无
+ * 备  注：
+ ****************************************************************************** */
 void __fastcall TINI::WriteInteger(const char* mAttr, const char* cAttr,
 	int value) {
 	// --------------------------------------------------------
 	char cvalue[64] = {0};
 	string str_value = itoa(value, cvalue, 10);
 	// --------------------------------------------------------
-	WriteString(mAttr,cAttr,str_value.c_str());
+	WriteString(mAttr, cAttr, str_value.c_str());
 	// --------------------------------------------------------
 }
+
+// -------------------------------------------------------------------------------
+/******************************************************************************
+ *功  能：设置键值的布尔型
+ * 参  数：
+ *mAttr                     主键
+ *cAttr                     子键
+ *value				       设定值
+ * 返回值：无
+ * 备  注：
+ ****************************************************************************** */
+void __fastcall TINI::WriteBoolean(const char* mAttr, const char* cAttr,
+	bool value) {
+	// --------------------------------------------------------
+	if (value) {
+		WriteString(mAttr, cAttr, "true");
+	}
+	else {
+		WriteString(mAttr, cAttr, "false");
+	}
+	// --------------------------------------------------------
+}
+
 // -------------------------------------------------------------------------------
