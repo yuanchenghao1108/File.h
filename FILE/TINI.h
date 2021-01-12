@@ -64,7 +64,7 @@ public:
 	int __fastcall LoadFile(const char* filename);
 	int __fastcall UnLoadFile(void);
 	int __fastcall LoadFileFromStream();
-    void __fastcall SaveToFile(const char* filename);
+   	void __fastcall SaveToFile(const char* filename);
 	// --------------------------------------------------------
 	TINI(void);
 	~TINI(void);
