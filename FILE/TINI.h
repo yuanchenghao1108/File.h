@@ -2,6 +2,7 @@
 #pragma once
 // -------------------------------------------------------------------------------
 #include <map>
+#include <list>
 #include<string>
 // -------------------------------------------------------------------------------
 using namespace std;
@@ -31,6 +32,7 @@ private:
 	FILE* m_fp;
 	char m_szKey[CONFIGLEN];
 	MAINKEYMAP m_Map;
+	list<string>Text_list;
 
 	// --------------------------------------------------------
 	void __fastcall _init_all_vars(bool is_first);
@@ -56,10 +58,13 @@ public:
 		const char* value);
 	void __fastcall WriteInteger(const char* mAttr, const char* cAttr,
 		int value);
+	void __fastcall WriteBoolean(const char* mAttr, const char* cAttr,
+		bool value);
 	// --------------------------------------------------------
 	int __fastcall LoadFile(const char* filename);
-	INI_RES __fastcall UnLoadFile(void);
+	int __fastcall UnLoadFile(void);
 	int __fastcall LoadFileFromStream();
+    void __fastcall SaveToFile(const char* filename);
 	// --------------------------------------------------------
 	TINI(void);
 	~TINI(void);
