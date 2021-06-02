@@ -19,6 +19,7 @@ ios::app|ios::out    	 	:如果没有文件则创建文件，如果有文件，�
 ios::ate|ios::out     		:如果没有文件则创建文件，如果有，则清空文件。
 ios::ate|ios::out|ios::in       :如果没有文件，则打开失败，有文件则定位到文件尾
 */
+#define  MAX_PATH_LEN						1024*4
 // -------------------------------------------------------------------------------
 bool LoadFileToStream(const char* file_name,fstream& stream,int mode) {
 	// --------------------------------------------------------
@@ -28,9 +29,9 @@ bool LoadFileToStream(const char* file_name,fstream& stream,int mode) {
 	// --------------------------------------------------------
 	stream.clear();
 	// --------------------------------------------------------
-	srream.open(file_name,mode);
+	stream.open(file_name,mode);
 	// --------------------------------------------------------
-	if (!srream.is_open()) {
+	if (!stream.is_open()) {
 		return false;
 	}
 	// --------------------------------------------------------
@@ -123,7 +124,7 @@ int GetFileList(const char* path,std::list<std::string>& file_list) {
 	}
 	inPath += "*";
 	// --------------------------------------------------------
-	handle = _findfirst(inPath.c_str(), &fileinfo);
+	handle = _findfirst((char*)inPath.c_str(), &fileinfo);
 	if (handle == -1) {
 		return -1;
 	}
