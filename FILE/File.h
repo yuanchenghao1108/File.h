@@ -39,7 +39,7 @@ bool LoadFileToStream(const char* file_name,fstream& stream,int mode) {
 }
 
 // -------------------------------------------------------------------------------
-bool __fastcall IsFileExist(const char* file_name,bool bwrite){
+bool __fastcall IsFileExist(const char* file_name){
 	// --------------------------------------------------------
 	if (!file_name || (file_name == '\0')) {
 		return false;
