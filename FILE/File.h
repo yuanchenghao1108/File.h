@@ -105,13 +105,13 @@ bool IsDirExist(const char* path) {
 
 // -------------------------------------------------------------------------------
 /*索引目录下所有文件，包括子目录，将索引到的文件放到file_list中*/
-int GetFileList(const char* path,std::list<std::string>& file_list) {
+int GetFileList(const char* path, std::list<std::string>& file_list) {
 	// --------------------------------------------------------
 	if (!path || (path == '\0')) {
 		return -1;
 	}
 	// --------------------------------------------------------
-	if (!_access(path, 0)) {
+	if (_access(path, 0) == -1) {
 		return -1;
 	}
 	// --------------------------------------------------------
@@ -122,6 +122,9 @@ int GetFileList(const char* path,std::list<std::string>& file_list) {
 	if (inPath.find_last_of("\\") != (inPath.length() - 1)) {
 		inPath += "\\";
 	}
+	// --------------------------------------------------------
+	std::string totalfilename(inPath);
+	// --------------------------------------------------------
 	inPath += "*";
 	// --------------------------------------------------------
 	handle = _findfirst((char*)inPath.c_str(), &fileinfo);
@@ -129,24 +132,54 @@ int GetFileList(const char* path,std::list<std::string>& file_list) {
 		return -1;
 	}
 	// --------------------------------------------------------
-	do
-	{
-		if (fileinfo.attrib & _A_SUBDIR)
-		{
-			if ((strcmp(fileinfo.name, ".") != 0) && (strcmp(fileinfo.name, "..") != 0))
-			{
-				inPath = path;
+	do {
+		// ----------------------------------------------------
+		if (fileinfo.attrib & _A_SUBDIR) { // 目录
+			// ------------------------------------------------
+			if ((strcmp(fileinfo.name, ".") != 0) && (strcmp(fileinfo.name,
+				"..") != 0)) {
+				inPath = totalfilename;
 				inPath += fileinfo.name;
 				inPath += "\\";
-				//printf("%s\n", inPath.c_str());
+				// printf("%s\n", inPath.c_str());
 				GetFileList(inPath.c_str(), file_list);
 			}
+			// ------------------------------------------------
 		}
-		else {
-			//printf("%s\n", fileinfo.name);
-			file_list.push_back(fileinfo.name);
+		else { // 文件
+			// ------------------------------------------------
+			// printf("%s\n", fileinfo.name);
+			// 文件名：
+			// file_list.push_back(fileinfo.name);
+			// ------------------------------------------------
+			// 路径+文件名
+			std::string newfilename(totalfilename);
+			newfilename += fileinfo.name;
+			// ------------------------------------------------
+			if (!file_list.empty()) {
+				// --------------------------------------------
+				bool bexistence = false;
+				// --------------------------------------------
+				for (std::list<std::string>::iterator iter = file_list.begin();
+				iter != file_list.end(); iter++) {
+					if (*iter == newfilename) {
+						bexistence = true;
+						break;
+					}
+				} // for-loop
+				// --------------------------------------------
+				if (!bexistence) {
+					file_list.push_back(newfilename);
+				}
+				// --------------------------------------------
+			}
+			else {
+				file_list.push_back(newfilename);
+			}
+			// ------------------------------------------------
 		}
-	} while (!_findnext(handle, &fileinfo));
+	}
+	while (!_findnext(handle, &fileinfo));
 	// --------------------------------------------------------
 	_findclose(handle);
 	// --------------------------------------------------------
