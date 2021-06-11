@@ -1,14 +1,15 @@
+#ifndef FILE_H
+#define FILE_H
 // ---------------------------------------------------------------------------
 #pragma once
 // ---------------------------------------------------------------------------
-#ifndef FILE_H
-#define FILE_H
 #include<fstream>
 #include <string>
 #include <io.h>
 #include <list>
 #include <direct.h>
 #include <stdlib.h>
+#include <windows.h>
 // ---------------------------------------------------------------------------
 /*
  mode:
@@ -58,7 +59,7 @@ bool Create_Directory(const char* path) {
 		return false;
 	}
 	// --------------------------------------------------------
-	if (strlen(path) > MAX_PATH_LEN) {
+	if (sizeof(path) > MAX_PATH_LEN) {
 		return false;
 	}
 	// --------------------------------------------------------
@@ -87,6 +88,25 @@ bool Create_Directory(const char* path) {
 	return true;
 }
 
+// ---------------------------------------------------------------------------
+/*
+ char Log_Text[1024 * 4] = {0};
+
+ const char* Print_Log(const char* fmt, ...) {
+ // ----------------------------------------------------------
+ va_list log_param;
+ // ----------------------------------------------------------
+ memset(Log_Text, 0, 1024*4);
+ // ----------------------------------------------------------
+ va_start(log_param, fmt);
+ // ----------------------------------------------------------
+ _vsntprintf(Log_Text, 1024*4, fmt, log_param);
+ // ----------------------------------------------------------
+ va_end(log_param);
+ // ----------------------------------------------------------
+ return Log_Text;
+ }
+ */
 // ---------------------------------------------------------------------------
 bool IsDirExist(const char* path) {
 	// --------------------------------------------------------
@@ -221,6 +241,30 @@ int GetPathInfo(const char* path, int mode, std::string& result) {
 		result = "";
 	}
 	return 0;
+}
+
+// ---------------------------------------------------------------------------
+void __fastcall Open_File_Dir(const char* file_name) {
+	// ------------------------------------------------------
+	SHELLEXECUTEINFO ShExecInfo = {0};
+	// ------------------------------------------------------
+	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+	// ------------------------------------------------------
+	ShExecInfo.fMask =
+		SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC | SEE_MASK_FLAG_NO_UI |
+		SEE_MASK_NO_CONSOLE;
+	// ------------------------------------------------------
+	ShExecInfo.hwnd = NULL;
+	ShExecInfo.lpVerb = NULL;
+	// ------------------------------------------------------
+	ShExecInfo.lpFile = file_name; // 调用的程序名
+	// ------------------------------------------------------
+	ShExecInfo.lpDirectory = NULL;
+	ShExecInfo.nShow = SW_SHOW; // SW_HIDE; //SW_SHOW; // 窗口状态为隐藏
+	ShExecInfo.hInstApp = NULL;
+	ShellExecuteEx(&ShExecInfo);
+	// ------------------------------------------------------
+	// WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
 }
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
