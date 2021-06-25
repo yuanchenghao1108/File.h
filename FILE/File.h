@@ -266,6 +266,54 @@ void __fastcall Open_File_Dir(const char* file_name) {
 	// ------------------------------------------------------
 	// WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
 }
+
+// ---------------------------------------------------------------------------
+char* _Trim(char *str) {
+	char *str_last, *str_cur;
+	if (str == NULL)
+		return NULL;
+	// ----------------------------------------------------
+	for (; *str == TEXT(' ') || *str == TEXT('\t'); ++str);
+	for (str_last = str_cur = str; *str_cur != TEXT('\0'); ++str_cur)
+		if (*str_cur != TEXT(' ') && *str_cur != TEXT('\t'))
+			str_last = str_cur;
+	// ----------------------------------------------------
+	*++str_last = 0;
+	return str;
+}
+
+// ---------------------------------------------------------------------------
+bool _Judeg_A(std::string str) {
+	// ----------------------------------------------------
+	for (unsigned int i = 0; i < str.size(); i++) {
+		if (str[i] >= 'a' && str[i] <= 'z') {
+			return true;
+		}
+		else if (str[i] >= 'A' && str[i] <= 'Z') {
+			return true;
+		}
+	}
+	// ----------------------------------------------------
+	return false;
+}
+
+// ---------------------------------------------------------------------------
+char* _ToUpper(char* str) {
+	// ----------------------------------------------------
+	char *str_temp, *str_cur;
+	if (str == NULL)
+		return NULL;
+	// ----------------------------------------------------
+	for (str_temp = str_cur = str; *str_cur != TEXT('\0');) {
+		*str_temp = toupper(*str_cur);
+		str_cur++;
+		str_temp = str_cur;
+	}
+	// ----------------------------------------------------
+	*++str_temp = 0;
+	return str;
+}
+
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 #endif
