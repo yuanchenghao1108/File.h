@@ -282,6 +282,19 @@ char* _Trim(char *str) {
 	return str;
 }
 
+std::string& _Trim(std::string& str) {
+	// ----------------------------------------------------
+	str.erase(0, str.find_first_not_of(' '));
+	// ----------------------------------------------------
+	unsigned int pos = str.find_last_not_of(' ');
+	// ----------------------------------------------------
+	if (pos != str.npos) {
+		str.erase(pos + 1, str.size() - pos - 1);
+	}
+	// ----------------------------------------------------
+	return str;
+}
+
 // ---------------------------------------------------------------------------
 bool _Judeg_A(std::string str) {
 	// ----------------------------------------------------
@@ -314,6 +327,49 @@ char* _ToUpper(char* str) {
 	return str;
 }
 
+void Push_Key(int vk) {
+	keybd_event(vk, 0, 0, 0); // down
+	keybd_event(vk, 0, KEYEVENTF_KEYUP, 0); // up
+}
+
+void Push_Key(int vk_1, int vk_2) {
+	keybd_event(vk_1, 0, 0, 0); // down
+
+	keybd_event(vk_2, 0, 0, 0); // down
+	keybd_event(vk_2, 0, KEYEVENTF_KEYUP, 0); // up
+
+	keybd_event(vk_1, 0, KEYEVENTF_KEYUP, 0); // up
+}
+/*
+ AnsiString __fastcall MAIN_FORM_OBJ_CLASS::GetDomainName(void) {
+ // -------------------------------------
+ char FAR t_c[100] = {0};
+ struct hostent *hostname;
+ struct hostent FAR * t_host;
+ unsigned int addr;
+ // -------------------------------------
+ ::gethostname(t_c, sizeof(t_c));
+ // -------------------------------------
+ t_host = ::gethostbyname(t_c);
+ // -------------------------------------
+ if (t_host) {
+ AnsiString sIP = AnsiString(t_host->h_name);
+ if (t_host->h_addr_list[0] == NULL)
+ sIP = "";
+ else
+ sIP = IntToStr((unsigned char)t_host->h_addr_list[0][0]) + "." +
+ IntToStr((unsigned char)t_host->h_addr_list[0][1]) + "." +
+ IntToStr((unsigned char)t_host->h_addr_list[0][2]) + "." +
+ IntToStr((unsigned char)t_host->h_addr_list[0][3]);
+ addr = ::inet_addr((char FAR*)(sIP.c_str()));
+ hostname = ::gethostbyaddr((char *)&addr, 4, AF_INET);
+ if (hostname) {
+ return AnsiString(hostname->h_name);
+ }
+ }
+ // -------------------------------------
+ return "";
+ } */
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 #endif
