@@ -1,9 +1,6 @@
 // ---------------------------------------------------------------------------
-#ifndef LogH
-#define LogH
-// ---------------------------------------------------------------------------
-#include "..\\FILE\\File.h"
-
+#ifndef Log_H
+#define Log_H
 // ---------------------------------------------------------------------------
 typedef enum log_levels {
 	LOG_LVL_SILENT = 0, LOG_LVL_OUTPUT, LOG_LVL_USER, LOG_LVL_FATAL,
@@ -12,7 +9,7 @@ typedef enum log_levels {
 } EM_LOG_LEVELS;
 
 // ---------------------------------------------------------------------------
-const char* _get_level_str(EM_LOG_LEVELS level) {
+__inline const char* _get_level_str(EM_LOG_LEVELS level) {
 	// --------------------------------------------------------
 	switch (level) {
 	case LOG_LVL_SILENT:
@@ -50,7 +47,7 @@ const char* _get_level_str(EM_LOG_LEVELS level) {
 class TLog {
 private:
 	EM_LOG_LEVELS Log_Level;
-	HANDLE File_Handle;
+	void* File_Handle;
 	char DataTime[64];
 
 	char Log_Buf[LOG_MAX_BUF_LEN];
@@ -62,7 +59,6 @@ private:
 	const char* __fastcall _printf_log_line_str(EM_LOG_LEVELS level,
 		const char* text);
 	bool __fastcall _write_log(const char* text, size_t len);
-	EM_LOG_LEVELS __fastcall _get_log_level(EM_LOG_LEVELS);
 
 public:
 	void PrintLog(EM_LOG_LEVELS level, const char*format, ...);
@@ -70,14 +66,14 @@ public:
 	~TLog();
 };
 // ---------------------------------------------------------------------------
-#define LOG_OUTPUT(...)	 if(pLog)pLog->PrintLog(LOG_LVL_OUTPUT,__VA_ARGS__);
-#define LOG_USER(...)	 if(pLog)pLog->PrintLog(LOG_LVL_USER,__VA_ARGS__);
-#define LOG_FATAL(...)	 if(pLog)pLog->PrintLog(LOG_LVL_FATAL,__VA_ARGS__);
-#define LOG_ERROR(...)	 if(pLog)pLog->PrintLog(LOG_LVL_ERROR,__VA_ARGS__);
-#define LOG_WARNING(...)	 if(pLog)pLog->PrintLog(LOG_LVL_WARNING,__VA_ARGS__);
-#define LOG_INFO(...)	 if(pLog)pLog->PrintLog(LOG_LVL_INFO,__VA_ARGS__);
-#define LOG_DEBUG(...)	 if(pLog)pLog->PrintLog(LOG_LVL_DEBUG,__VA_ARGS__);
-#define LOG_DIDO(...)	 if(pLog)pLog->PrintLog(LOG_LVL_DIDO,__VA_ARGS__);
-#define LOG_LOW(...)	 if(pLog)pLog->PrintLog(LOG_LVL_LOW,__VA_ARGS__);
+#define LOG_OUTPUT(...)		if(pLog)pLog->PrintLog(LOG_LVL_OUTPUT,__VA_ARGS__);
+#define LOG_USER(...)		if(pLog)pLog->PrintLog(LOG_LVL_USER,__VA_ARGS__);
+#define LOG_FATAL(...)		if(pLog)pLog->PrintLog(LOG_LVL_FATAL,__VA_ARGS__);
+#define LOG_ERROR(...)		if(pLog)pLog->PrintLog(LOG_LVL_ERROR,__VA_ARGS__);
+#define LOG_WARNING(...)	if(pLog)pLog->PrintLog(LOG_LVL_WARNING,__VA_ARGS__);
+#define LOG_INFO(...)		if(pLog)pLog->PrintLog(LOG_LVL_INFO,__VA_ARGS__);
+#define LOG_DEBUG(...)		if(pLog)pLog->PrintLog(LOG_LVL_DEBUG,__VA_ARGS__);
+#define LOG_DIDO(...)		if(pLog)pLog->PrintLog(LOG_LVL_DIDO,__VA_ARGS__);
+#define LOG_LOW(...)		if(pLog)pLog->PrintLog(LOG_LVL_LOW,__VA_ARGS__);
 // ---------------------------------------------------------------------------
 #endif
