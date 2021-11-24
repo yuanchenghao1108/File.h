@@ -1,11 +1,7 @@
 // ---------------------------------------------------------------------------
-#pragma hdrstop
-// ---------------------------------------------------------------------------
 #include "Log.h"
 #include <windows.h>
-// ---------------------------------------------------------------------------
-#pragma package(smart_init)
-
+#include<stdio.h>
 // ---------------------------------------------------------------------------
 TLog::TLog(const char* filename, EM_LOG_LEVELS level) {
 	// --------------------------------------------------------
@@ -14,7 +10,7 @@ TLog::TLog(const char* filename, EM_LOG_LEVELS level) {
 	_init_all_ptr(true);
 	Log_Level = level;
 	// --------------------------------------------------------
-	File_Handle = CreateFile(filename, GENERIC_READ | GENERIC_WRITE,
+	File_Handle = CreateFile((LPCWSTR)filename, GENERIC_READ | GENERIC_WRITE,
 		FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, 0);
 	// --------------------------------------------------------
 }
@@ -53,7 +49,7 @@ const char* __fastcall TLog::_get_date_time(void) {
 	SYSTEMTIME tm;
 	GetLocalTime(&tm);
 	// --------------------------------------------
-	_sntprintf_s(DataTime, 64 - 1, _T("%04d-%02d-%02d %02d:%02d:%02d:%03d"),
+	snprintf(DataTime, 64 - 1, "%04d-%02d-%02d %02d:%02d:%02d:%03d",
 		tm.wYear, tm.wMonth, tm.wDay, tm.wHour, tm.wMinute, tm.wSecond,
 		tm.wMilliseconds);
 	// --------------------------------------------
@@ -92,7 +88,7 @@ const char* __fastcall TLog::_printf_log_line_str(EM_LOG_LEVELS level,
 	}
 	catch (...) {
 		// ----------------------------------------------------
-		_sntprintf_s(Log_Buf, LOG_MAX_BUF_LEN, "%s %s %s\r\n", _get_date_time(),
+		snprintf(Log_Buf, LOG_MAX_BUF_LEN, "%s %s %s\r\n", _get_date_time(),
 			_get_level_str(level), "!!!Input variant args has bugs!!!");
 		// ----------------------------------------------------
 	}
@@ -124,7 +120,7 @@ void TLog::PrintLog(EM_LOG_LEVELS level, const char*format, ...) {
 	va_start(ap, format);
 	memset(Log_Text, 0, LOG_MAX_BUF_LEN);
 	// --------------------------------------------------------
-	_vsnprintf(Log_Text, LOG_MAX_BUF_LEN, format, ap);
+	snprintf(Log_Text, LOG_MAX_BUF_LEN, format, ap);
 	// --------------------------------------------------------
 	_printf_log_line_str(level, Log_Text);
 	_write_log(Log_Buf, strlen(Log_Buf));
