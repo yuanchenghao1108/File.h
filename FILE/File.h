@@ -240,7 +240,11 @@ void __fastcall Open_File_Dir(const char* file_name) {
 	ShExecInfo.hwnd = NULL;
 	ShExecInfo.lpVerb = NULL;
 	// ------------------------------------------------------
+#ifdef UNICODE
 	ShExecInfo.lpFile = (LPCWSTR)file_name; // 调用的程序名
+#else
+	ShExecInfo.lpFile = file_name; // 调用的程序名
+#endif
 	// ------------------------------------------------------
 	ShExecInfo.lpDirectory = NULL;
 	ShExecInfo.nShow = SW_SHOW; // SW_HIDE; //SW_SHOW; // 窗口状态为隐藏
