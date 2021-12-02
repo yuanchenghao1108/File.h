@@ -1,6 +1,10 @@
 // ---------------------------------------------------------------------------
+#pragma once
+// ---------------------------------------------------------------------------
 #ifndef Log_H
 #define Log_H
+// ---------------------------------------------------------------------------
+#include <windows.h>
 // ---------------------------------------------------------------------------
 typedef enum log_levels {
 	LOG_LVL_SILENT = 0, LOG_LVL_OUTPUT, LOG_LVL_USER, LOG_LVL_FATAL,
@@ -42,14 +46,17 @@ __inline const char* _get_level_str(EM_LOG_LEVELS level) {
 
 // ---------------------------------------------------------------------------
 #define LOG_MAX_BUF_LEN													(1024*4)
-
 // ---------------------------------------------------------------------------
 class TLog {
 private:
 	EM_LOG_LEVELS Log_Level;
 	void* File_Handle;
 	char DataTime[64];
-
+#ifdef UNICODE
+	WCHAR FileName[256];
+#else
+	char FileName[256];
+#endif
 	char Log_Buf[LOG_MAX_BUF_LEN];
 	char Log_Text[LOG_MAX_BUF_LEN];
 
