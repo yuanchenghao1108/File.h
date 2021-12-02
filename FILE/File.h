@@ -1,7 +1,8 @@
-#ifndef FILE_H
-#define FILE_H
 // ---------------------------------------------------------------------------
 #pragma once
+// ---------------------------------------------------------------------------
+#ifndef FILE_H
+#define FILE_H
 // ---------------------------------------------------------------------------
 #include<fstream>
 #include <string>
@@ -13,16 +14,16 @@
 #include <stdarg.h>
 // ---------------------------------------------------------------------------
 /*
- mode:
- ios::app|ios::out    	 	  	 :如果没有文件则创建文件，如果有文件，则在文件尾追加
- ios::ate|ios::out     			 :如果没有文件则创建文件，如果有，则清空文件。
- ios::ate|ios::out|ios::in       :如果没有文件，则打开失败，有文件则定位到文件尾
- */
+mode:
+ios::app|ios::out    	 	  	 :如果没有文件则创建文件，如果有文件，则在文件尾追加
+ios::ate|ios::out     			 :如果没有文件则创建文件，如果有，则清空文件。
+ios::ate|ios::out|ios::in       :如果没有文件，则打开失败，有文件则定位到文件尾
+*/
 #define  MAX_PATH_LEN													1024*4
 #define  MAX_LOG_BUF_LEN												1024*4
 
 // ---------------------------------------------------------------------------
-bool LoadFileToStream(const char* file_name, fstream& stream, int mode) {
+bool LoadFileToStream(const char* file_name, std::fstream& stream, int mode) {
 	// --------------------------------------------------------
 	if (!file_name || (file_name == '\0')) {
 		return false;
@@ -71,7 +72,7 @@ bool Create_Directory(const char* path) {
 		inPath += "\\";
 	}
 	// --------------------------------------------------------
-	char tmpDirPath[MAX_PATH_LEN] = {0};
+	char tmpDirPath[MAX_PATH_LEN] = { 0 };
 	// --------------------------------------------------------
 	for (uint32_t i = 0; i < inPath.length(); ++i) {
 		// ----------------------------------------------------
@@ -86,7 +87,7 @@ bool Create_Directory(const char* path) {
 		}
 		// ----------------------------------------------------
 	} // for-loop
-	// --------------------------------------------------------
+	  // --------------------------------------------------------
 	return true;
 }
 
@@ -136,7 +137,7 @@ int GetFileList(const char* path, std::list<std::string>& file_list) {
 	do {
 		// ----------------------------------------------------
 		if (fileinfo.attrib & _A_SUBDIR) { // 目录
-			// ------------------------------------------------
+										   // ------------------------------------------------
 			if ((strcmp(fileinfo.name, ".") != 0) && (strcmp(fileinfo.name,
 				"..") != 0)) {
 				inPath = totalfilename;
@@ -148,12 +149,12 @@ int GetFileList(const char* path, std::list<std::string>& file_list) {
 			// ------------------------------------------------
 		}
 		else { // 文件
-			// ------------------------------------------------
-			// printf("%s\n", fileinfo.name);
-			// 文件名：
-			// file_list.push_back(fileinfo.name);
-			// ------------------------------------------------
-			// 路径+文件名
+			   // ------------------------------------------------
+			   // printf("%s\n", fileinfo.name);
+			   // 文件名：
+			   // file_list.push_back(fileinfo.name);
+			   // ------------------------------------------------
+			   // 路径+文件名
 			std::string newfilename(totalfilename);
 			newfilename += fileinfo.name;
 			// ------------------------------------------------
@@ -168,7 +169,7 @@ int GetFileList(const char* path, std::list<std::string>& file_list) {
 						break;
 					}
 				} // for-loop
-				// --------------------------------------------
+				  // --------------------------------------------
 				if (!bexistence) {
 					file_list.push_back(newfilename);
 				}
@@ -179,8 +180,7 @@ int GetFileList(const char* path, std::list<std::string>& file_list) {
 			}
 			// ------------------------------------------------
 		}
-	}
-	while (!_findnext(handle, &fileinfo));
+	} while (!_findnext(handle, &fileinfo));
 	// --------------------------------------------------------
 	_findclose(handle);
 	// --------------------------------------------------------
@@ -189,23 +189,23 @@ int GetFileList(const char* path, std::list<std::string>& file_list) {
 
 // ---------------------------------------------------------------------------
 /*
- mode:
- 0:磁盘名
- 1:路径名
- 2:文件名
- 3:后缀名
- */
+mode:
+0:磁盘名
+1:路径名
+2:文件名
+3:后缀名
+*/
 int GetPathInfo(const char* path, int mode, std::string& result) {
 	// --------------------------------------------------------
 	if (!path || path[0] == '\0') {
 		return -1;
 	}
-	char szDrive[64] = {0}; // 磁盘名
-	char szDir[1024] = {0}; // 路径名
-	char szFname[1024] = {0}; // 文件名
-	char szExt[64] = {0}; // 后缀名
+	char szDrive[64] = { 0 }; // 磁盘名
+	char szDir[1024] = { 0 }; // 路径名
+	char szFname[1024] = { 0 }; // 文件名
+	char szExt[64] = { 0 }; // 后缀名
 	// --------------------------------------------------------
-	_splitpath(path, szDrive, szDir, szFname, szExt); // 分解路径
+	_splitpath_s(path, szDrive, szDir, szFname, szExt); // 分解路径
 	// --------------------------------------------------------
 	switch (mode) {
 	case 0:
@@ -220,7 +220,7 @@ int GetPathInfo(const char* path, int mode, std::string& result) {
 	case 3:
 		result = szExt;
 		break;
-	default: ;
+	default:;
 		result = "";
 	}
 	return 0;
@@ -229,7 +229,7 @@ int GetPathInfo(const char* path, int mode, std::string& result) {
 // ---------------------------------------------------------------------------
 void __fastcall Open_File_Dir(const char* file_name) {
 	// ------------------------------------------------------
-	SHELLEXECUTEINFO ShExecInfo = {0};
+	SHELLEXECUTEINFO ShExecInfo = { 0 };
 	// ------------------------------------------------------
 	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
 	// ------------------------------------------------------
@@ -240,7 +240,7 @@ void __fastcall Open_File_Dir(const char* file_name) {
 	ShExecInfo.hwnd = NULL;
 	ShExecInfo.lpVerb = NULL;
 	// ------------------------------------------------------
-	ShExecInfo.lpFile = file_name; // 调用的程序名
+	ShExecInfo.lpFile = (LPCWSTR)file_name; // 调用的程序名
 	// ------------------------------------------------------
 	ShExecInfo.lpDirectory = NULL;
 	ShExecInfo.nShow = SW_SHOW; // SW_HIDE; //SW_SHOW; // 窗口状态为隐藏
@@ -251,6 +251,7 @@ void __fastcall Open_File_Dir(const char* file_name) {
 }
 
 // ---------------------------------------------------------------------------
+/*
 void __fastcall SaveStringListToFile(const char*file_path,
 	std::list<std::string>str_list) {
 	// ------------------------------------------------------
@@ -277,7 +278,7 @@ void __fastcall SaveStringListToFile(const char*file_path,
 		outfile << *item << "\r\n";
 		// --------------------------------------------------
 	} // for-loop  str_list
-	// ------------------------------------------------------
+	  // ------------------------------------------------------
 	outfile.close();
 	// ------------------------------------------------------
 }
@@ -303,7 +304,7 @@ void PrintTextToStream(fstream& stream, const char* fmt, ...) {
 	va_end(ap);
 	// ------------------------------------------------------
 }
-
+*/
 // ---------------------------------------------------------------------------
 char* _Trim(char *str) {
 	char *str_last, *str_cur;
@@ -379,35 +380,35 @@ void Push_Key(int vk_1, int vk_2) {
 	keybd_event(vk_1, 0, KEYEVENTF_KEYUP, 0); // up
 }
 /*
- AnsiString __fastcall MAIN_FORM_OBJ_CLASS::GetDomainName(void) {
- // -------------------------------------
- char FAR t_c[100] = {0};
- struct hostent *hostname;
- struct hostent FAR * t_host;
- unsigned int addr;
- // -------------------------------------
- ::gethostname(t_c, sizeof(t_c));
- // -------------------------------------
- t_host = ::gethostbyname(t_c);
- // -------------------------------------
- if (t_host) {
- AnsiString sIP = AnsiString(t_host->h_name);
- if (t_host->h_addr_list[0] == NULL)
- sIP = "";
- else
- sIP = IntToStr((unsigned char)t_host->h_addr_list[0][0]) + "." +
- IntToStr((unsigned char)t_host->h_addr_list[0][1]) + "." +
- IntToStr((unsigned char)t_host->h_addr_list[0][2]) + "." +
- IntToStr((unsigned char)t_host->h_addr_list[0][3]);
- addr = ::inet_addr((char FAR*)(sIP.c_str()));
- hostname = ::gethostbyaddr((char *)&addr, 4, AF_INET);
- if (hostname) {
- return AnsiString(hostname->h_name);
- }
- }
- // -------------------------------------
- return "";
- } */
+AnsiString __fastcall MAIN_FORM_OBJ_CLASS::GetDomainName(void) {
+// -------------------------------------
+char FAR t_c[100] = {0};
+struct hostent *hostname;
+struct hostent FAR * t_host;
+unsigned int addr;
+// -------------------------------------
+::gethostname(t_c, sizeof(t_c));
+// -------------------------------------
+t_host = ::gethostbyname(t_c);
+// -------------------------------------
+if (t_host) {
+AnsiString sIP = AnsiString(t_host->h_name);
+if (t_host->h_addr_list[0] == NULL)
+sIP = "";
+else
+sIP = IntToStr((unsigned char)t_host->h_addr_list[0][0]) + "." +
+IntToStr((unsigned char)t_host->h_addr_list[0][1]) + "." +
+IntToStr((unsigned char)t_host->h_addr_list[0][2]) + "." +
+IntToStr((unsigned char)t_host->h_addr_list[0][3]);
+addr = ::inet_addr((char FAR*)(sIP.c_str()));
+hostname = ::gethostbyaddr((char *)&addr, 4, AF_INET);
+if (hostname) {
+return AnsiString(hostname->h_name);
+}
+}
+// -------------------------------------
+return "";
+} */
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 #endif
