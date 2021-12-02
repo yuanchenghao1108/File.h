@@ -20,10 +20,8 @@ TLog::TLog(const char* filename, EM_LOG_LEVELS level) {
 	File_Handle = CreateFile((LPCWSTR)FileName, GENERIC_READ | GENERIC_WRITE,
 		FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, 0);
 #else
-	snprintf(FileName, 100, L"%s", filename);
+	snprintf(FileName, 100, "%s", filename);
 	File_Handle = CreateFile((LPCSTR)FileName, GENERIC_READ | GENERIC_WRITE,
-		FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, 0);
-	File_Handle = CreateFile((LPCWSTR)filename, GENERIC_READ | GENERIC_WRITE,
 		FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, 0);
 #endif
 	// --------------------------------------------------------
