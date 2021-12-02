@@ -1,7 +1,6 @@
 // ---------------------------------------------------------------------------
 #include "Log.h"
-#include <windows.h>
-#include<stdio.h>
+#include "..\\File\TFile.h"
 // ---------------------------------------------------------------------------
 TLog::TLog(const char* filename, EM_LOG_LEVELS level) {
 	// --------------------------------------------------------
@@ -9,9 +8,24 @@ TLog::TLog(const char* filename, EM_LOG_LEVELS level) {
 	// --------------------------------------------------------
 	_init_all_ptr(true);
 	Log_Level = level;
-	// --------------------------------------------------------
+	// --------------------------------------------------------	
+	std::string newpath("");
+	GetPathInfo(filename, 1, newpath);
+	if (IsDirExist(newpath.c_str())) {
+		Create_Directory(newpath.c_str());
+	}
+	// --------------------------------------------------------	
+#ifdef UNICODE
+	swprintf(FileName, 100, L"%S", filename);
+	File_Handle = CreateFile((LPCWSTR)FileName, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, 0);
+#else
+	snprintf(FileName, 100, L"%s", filename);
+	File_Handle = CreateFile((LPCSTR)FileName, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, 0);
 	File_Handle = CreateFile((LPCWSTR)filename, GENERIC_READ | GENERIC_WRITE,
 		FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, 0);
+#endif
 	// --------------------------------------------------------
 }
 
@@ -35,8 +49,10 @@ void __fastcall TLog::_init_all_vars(bool is_first) {
 	Log_Level = LOG_LVL_SILENT;
 
 	memset(DataTime, 0, 64);
+	memset(FileName, 0, 256);
 	memset(Log_Buf, 0, LOG_MAX_BUF_LEN);
 	memset(Log_Text, 0, LOG_MAX_BUF_LEN);
+	
 	// --------------------------------------------------------
 }
 
