@@ -1,20 +1,29 @@
 // ---------------------------------------------------------------------------
 #include "Log.h"
-#include "..\\File\TFile.h"
+#include "..\\File\File.h"
 // ---------------------------------------------------------------------------
-TLog::TLog(const char* filename, EM_LOG_LEVELS level) {
+// ---------------------------------------------------------------------------
+TLog::TLog(const char* filename, const char* app_name, EM_LOG_LEVELS level) {
 	// --------------------------------------------------------
 	_init_all_vars(true);
 	// --------------------------------------------------------
 	_init_all_ptr(true);
+	// --------------------------------------------------------
 	Log_Level = level;
-	// --------------------------------------------------------	
+	// --------------------------------------------------------
 	std::string newpath("");
 	GetPathInfo(filename, 1, newpath);
-	if (IsDirExist(newpath.c_str())) {
+	// --------------------------------------------------------
+#ifdef M_SEND_MSG_SELF
+	snprintf(AppName, 256, app_name);
+#endif
+	// --------------------------------------------------------
+	if (!IsDirExist(newpath.c_str())) {
+		// ------------------------------------------------
 		Create_Directory(newpath.c_str());
+		// ------------------------------------------------
 	}
-	// --------------------------------------------------------	
+	// --------------------------------------------------------
 #ifdef UNICODE
 	swprintf(FileName, 100, L"%S", filename);
 	File_Handle = CreateFile((LPCWSTR)FileName, GENERIC_READ | GENERIC_WRITE,
@@ -50,7 +59,10 @@ void __fastcall TLog::_init_all_vars(bool is_first) {
 	memset(FileName, 0, 256);
 	memset(Log_Buf, 0, LOG_MAX_BUF_LEN);
 	memset(Log_Text, 0, LOG_MAX_BUF_LEN);
-	
+	// --------------------------------------------------------
+#ifdef M_SEND_MSG_SELF
+	memset(AppName, 0, 256);
+#endif
 	// --------------------------------------------------------
 }
 
@@ -78,6 +90,10 @@ void __fastcall TLog::_init_all_ptr(bool is_first) {
 	}
 	// --------------------------------------------------------
 	File_Handle = NULL;
+	// --------------------------------------------------------
+#ifdef M_SEND_MSG_SELF
+	hHandle = NULL;
+#endif
 	// --------------------------------------------------------
 }
 
@@ -137,6 +153,16 @@ void TLog::PrintLog(EM_LOG_LEVELS level, const char*format, ...) {
 	snprintf(Log_Text, LOG_MAX_BUF_LEN, format, ap);
 	// --------------------------------------------------------
 	_printf_log_line_str(level, Log_Text);
+	// --------------------------------------------------------
+#ifdef M_SEND_MSG_SELF
+	if (hHandle) {
+		SendLog(Log_Buf, level);
+	}
+	else {
+		hHandle = _find_win_handle_with_app_name(AppName);
+	}
+#endif
+	// --------------------------------------------------------
 	_write_log(Log_Buf, strlen(Log_Buf));
 	// --------------------------------------------------------
 	va_end(ap);
@@ -145,3 +171,67 @@ void TLog::PrintLog(EM_LOG_LEVELS level, const char*format, ...) {
 }
 
 // ---------------------------------------------------------------------------
+#ifdef M_SEND_MSG_SELF
+
+HWND __fastcall TLog::_find_win_handle_with_app_name(const char* app_name) {
+	// --------------------------------------------------------
+	return ::FindWindow(NULL, app_name);
+	// --------------------------------------------------------
+}
+
+// ---------------------------------------------------------------------------
+void __fastcall TLog::SendMsg(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+	// --------------------------------------------------------
+	::SendMessage(hwnd, Msg, wParam, lParam);
+	// --------------------------------------------------------
+}
+
+// ---------------------------------------------------------------------------
+void __fastcall TLog::SendLog(const char* slog, EM_LOG_LEVELS level) {
+	// --------------------------------------------------------
+	char str[LOG_MAX_BUF_LEN] = {0};
+	// --------------------------------------------------------
+	snprintf(str, LOG_MAX_BUF_LEN, "%s", slog);
+	// --------------------------------------------------------
+	int len = strlen(str);
+	str[len - 2] = '\0';
+	// --------------------------------------------------------
+	COPYDATASTRUCT mydata = {0};
+
+	switch (level) {
+	case LOG_LVL_ERROR:
+		mydata.dwData = 0x01;
+		break;
+	case LOG_LVL_WARNING:
+		mydata.dwData = 0x02;
+		break;
+	case LOG_LVL_INFO:
+		mydata.dwData = 0x03;
+		break;
+	case LOG_LVL_DEBUG:
+		mydata.dwData = 0x04;
+		break;
+	case LOG_LVL_DIDO:
+		mydata.dwData = 0x05;
+		break;
+	case LOG_LVL_LOW:
+		mydata.dwData = 0x06;
+		break;
+	default:
+		mydata.dwData = 0x07;
+		break;
+	}
+
+	mydata.cbData = strlen(str);
+	mydata.lpData = (void*)str;
+	// --------------------------------------------------------
+	SendMsg(hHandle, WM_COPYDATA, NULL, (LPARAM) & mydata);
+	// --------------------------------------------------------
+}
+
+// ---------------------------------------------------------------------------
+#endif
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// End
