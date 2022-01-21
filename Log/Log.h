@@ -67,20 +67,29 @@ private:
 		const char* text);
 	bool __fastcall _write_log(const char* text, size_t len);
 
+#ifdef M_SEND_MSG_SELF
+	char AppName[256];
+	HWND hHandle;
+	HWND __fastcall _find_win_handle_with_app_name(const char* app_name);
+#endif
 public:
+#ifdef M_SEND_MSG_SELF
+	void __fastcall SendMsg(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+	void __fastcall SendLog(const char* slog,EM_LOG_LEVELS level);
+#endif
 	void PrintLog(EM_LOG_LEVELS level, const char*format, ...);
-	TLog(const char* filename, EM_LOG_LEVELS level = LOG_LVL_SILENT);
+	TLog(const char* filename, const char* app_name,EM_LOG_LEVELS level = LOG_LVL_SILENT);
 	~TLog();
 };
 // ---------------------------------------------------------------------------
-#define LOG_OUTPUT(...)		if(pLog)pLog->PrintLog(LOG_LVL_OUTPUT,__VA_ARGS__);
-#define LOG_USER(...)		if(pLog)pLog->PrintLog(LOG_LVL_USER,__VA_ARGS__);
-#define LOG_FATAL(...)		if(pLog)pLog->PrintLog(LOG_LVL_FATAL,__VA_ARGS__);
-#define LOG_ERROR(...)		if(pLog)pLog->PrintLog(LOG_LVL_ERROR,__VA_ARGS__);
-#define LOG_WARNING(...)	if(pLog)pLog->PrintLog(LOG_LVL_WARNING,__VA_ARGS__);
-#define LOG_INFO(...)		if(pLog)pLog->PrintLog(LOG_LVL_INFO,__VA_ARGS__);
-#define LOG_DEBUG(...)		if(pLog)pLog->PrintLog(LOG_LVL_DEBUG,__VA_ARGS__);
-#define LOG_DIDO(...)		if(pLog)pLog->PrintLog(LOG_LVL_DIDO,__VA_ARGS__);
-#define LOG_LOW(...)		if(pLog)pLog->PrintLog(LOG_LVL_LOW,__VA_ARGS__);
+#define LOG_OUTPUT(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_OUTPUT,__VA_ARGS__);
+#define LOG_USER(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_USER,__VA_ARGS__);
+#define LOG_FATAL(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_FATAL,__VA_ARGS__);
+#define LOG_ERROR(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_ERROR,__VA_ARGS__);
+#define LOG_WARNING(...)       	if(pLog)pLog->PrintLog(LOG_LVL_WARNING,__VA_ARGS__);
+#define LOG_INFO(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_INFO,__VA_ARGS__);
+#define LOG_DEBUG(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_DEBUG,__VA_ARGS__);
+#define LOG_DIDO(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_DIDO,__VA_ARGS__);
+#define LOG_LOW(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_LOW,__VA_ARGS__);
 // ---------------------------------------------------------------------------
 #endif
