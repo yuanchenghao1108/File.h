@@ -1,9 +1,10 @@
 // ---------------------------------------------------------------------------
 #include "Log.h"
 #include "..\\File\File.h"
+
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-TLog::TLog(const char* filename, const char* app_name, EM_LOG_LEVELS level) {
+TLog::TLog(const TCHAR* filename, const TCHAR* app_name, EM_LOG_LEVELS level) {
 	// --------------------------------------------------------
 	_init_all_vars(true);
 	// --------------------------------------------------------
@@ -67,7 +68,7 @@ void __fastcall TLog::_init_all_vars(bool is_first) {
 }
 
 // ---------------------------------------------------------------------------
-const char* __fastcall TLog::_get_date_time(void) {
+const TCHAR* __fastcall TLog::_get_date_time(void) {
 	// --------------------------------------------
 	memset(DataTime, 0, 64);
 	// --------------------------------------------
@@ -75,9 +76,8 @@ const char* __fastcall TLog::_get_date_time(void) {
 	SYSTEMTIME tm;
 	GetLocalTime(&tm);
 	// --------------------------------------------
-	snprintf(DataTime, 64 - 1, "%04d-%02d-%02d %02d:%02d:%02d:%03d",
-		tm.wYear, tm.wMonth, tm.wDay, tm.wHour, tm.wMinute, tm.wSecond,
-		tm.wMilliseconds);
+	snprintf(DataTime, 64 - 1, "%04d-%02d-%02d %02d:%02d:%02d:%03d", tm.wYear,
+		tm.wMonth, tm.wDay, tm.wHour, tm.wMinute, tm.wSecond, tm.wMilliseconds);
 	// --------------------------------------------
 	return DataTime;
 }
@@ -98,8 +98,8 @@ void __fastcall TLog::_init_all_ptr(bool is_first) {
 }
 
 // ---------------------------------------------------------------------------
-const char* __fastcall TLog::_printf_log_line_str(EM_LOG_LEVELS level,
-	const char* text) {
+const TCHAR* __fastcall TLog::_printf_log_line_str(EM_LOG_LEVELS level,
+	const TCHAR* text) {
 	// --------------------------------------------------------
 	// 判断是否打印
 	if ((Log_Level < level) && (Log_Level != LOG_LVL_ERROR) &&
@@ -127,14 +127,14 @@ const char* __fastcall TLog::_printf_log_line_str(EM_LOG_LEVELS level,
 }
 
 // ---------------------------------------------------------------------------
-bool __fastcall TLog::_write_log(const char* text, size_t len) {
+bool __fastcall TLog::_write_log(const TCHAR* text, size_t len) {
 	// --------------------------------------------------------
 	if (!File_Handle) {
 		return false;
 	}
 	// --------------------------------------------------------
 	DWORD size_written;
-	BOOL result = WriteFile(File_Handle, text, len, &size_written, 0);
+	BOOL result = WriteFile((HANDLE)File_Handle, text, len, &size_written, 0);
 	// --------------------------------------------------------
 	if ((result == FALSE) || (size_written != len)) {
 		return false;
@@ -144,13 +144,13 @@ bool __fastcall TLog::_write_log(const char* text, size_t len) {
 }
 
 // ---------------------------------------------------------------------------
-void TLog::PrintLog(EM_LOG_LEVELS level, const char*format, ...) {
+void TLog::PrintLog(EM_LOG_LEVELS level, const TCHAR*format, ...) {
 	// --------------------------------------------------------
 	va_list ap;
 	va_start(ap, format);
 	memset(Log_Text, 0, LOG_MAX_BUF_LEN);
 	// --------------------------------------------------------
-	snprintf(Log_Text, LOG_MAX_BUF_LEN, format, ap);
+	_vsntprintf(Log_Text, LOG_MAX_BUF_LEN, format, ap);
 	// --------------------------------------------------------
 	_printf_log_line_str(level, Log_Text);
 	// --------------------------------------------------------
@@ -173,7 +173,7 @@ void TLog::PrintLog(EM_LOG_LEVELS level, const char*format, ...) {
 // ---------------------------------------------------------------------------
 #ifdef M_SEND_MSG_SELF
 
-HWND __fastcall TLog::_find_win_handle_with_app_name(const char* app_name) {
+HWND __fastcall TLog::_find_win_handle_with_app_name(const TCHAR* app_name) {
 	// --------------------------------------------------------
 	return ::FindWindow(NULL, app_name);
 	// --------------------------------------------------------
@@ -188,9 +188,9 @@ void __fastcall TLog::SendMsg(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 }
 
 // ---------------------------------------------------------------------------
-void __fastcall TLog::SendLog(const char* slog, EM_LOG_LEVELS level) {
+void __fastcall TLog::SendLog(const TCHAR* slog, EM_LOG_LEVELS level) {
 	// --------------------------------------------------------
-	char str[LOG_MAX_BUF_LEN] = {0};
+	TCHAR str[LOG_MAX_BUF_LEN] = {0};
 	// --------------------------------------------------------
 	snprintf(str, LOG_MAX_BUF_LEN, "%s", slog);
 	// --------------------------------------------------------
