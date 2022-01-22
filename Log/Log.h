@@ -13,7 +13,7 @@ typedef enum log_levels {
 } EM_LOG_LEVELS;
 
 // ---------------------------------------------------------------------------
-__inline const char* _get_level_str(EM_LOG_LEVELS level) {
+__inline const TCHAR* _get_level_str(EM_LOG_LEVELS level) {
 	// --------------------------------------------------------
 	switch (level) {
 	case LOG_LVL_SILENT:
@@ -51,34 +51,30 @@ class TLog {
 private:
 	EM_LOG_LEVELS Log_Level;
 	void* File_Handle;
-	char DataTime[64];
-#ifdef UNICODE
-	WCHAR FileName[256];
-#else
-	char FileName[256];
-#endif
-	char Log_Buf[LOG_MAX_BUF_LEN];
-	char Log_Text[LOG_MAX_BUF_LEN];
+	TCHAR DataTime[64];
+	TCHAR FileName[256];
+	TCHAR Log_Buf[LOG_MAX_BUF_LEN];
+	TCHAR Log_Text[LOG_MAX_BUF_LEN];
 
 	void __fastcall _init_all_vars(bool is_first);
 	void __fastcall _init_all_ptr(bool is_first);
-	const char* __fastcall _get_date_time(void);
-	const char* __fastcall _printf_log_line_str(EM_LOG_LEVELS level,
-		const char* text);
-	bool __fastcall _write_log(const char* text, size_t len);
+	const TCHAR* __fastcall _get_date_time(void);
+	const TCHAR* __fastcall _printf_log_line_str(EM_LOG_LEVELS level,
+		const TCHAR* text);
+	bool __fastcall _write_log(const TCHAR* text, size_t len);
 
 #ifdef M_SEND_MSG_SELF
-	char AppName[256];
+	TCHAR AppName[256];
 	HWND hHandle;
-	HWND __fastcall _find_win_handle_with_app_name(const char* app_name);
+	HWND __fastcall _find_win_handle_with_app_name(const TCHAR* app_name);
 #endif
 public:
 #ifdef M_SEND_MSG_SELF
 	void __fastcall SendMsg(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam);
-	void __fastcall SendLog(const char* slog,EM_LOG_LEVELS level);
+	void __fastcall SendLog(const TCHAR* slog,EM_LOG_LEVELS level);
 #endif
-	void PrintLog(EM_LOG_LEVELS level, const char*format, ...);
-	TLog(const char* filename, const char* app_name,EM_LOG_LEVELS level = LOG_LVL_SILENT);
+	void PrintLog(EM_LOG_LEVELS level, const TCHAR*format, ...);
+	TLog(const TCHAR* filename, const TCHAR* app_name,EM_LOG_LEVELS level = LOG_LVL_SILENT);
 	~TLog();
 };
 // ---------------------------------------------------------------------------
