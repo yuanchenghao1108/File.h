@@ -264,7 +264,7 @@ void __fastcall TLog::SendLog(const TCHAR* slog, EM_LOG_LEVELS level) {
 	}
 
 	mydata.cbData = len;
-	mydata.lpData = (void*)str;
+	mydata.lpData = (void*)str;a
 	// --------------------------------------------------------
 	SendMsg(hHandle, WM_COPYDATA, NULL, (LPARAM) & mydata);
 	// --------------------------------------------------------
