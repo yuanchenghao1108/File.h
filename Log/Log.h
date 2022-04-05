@@ -17,42 +17,43 @@ __inline const TCHAR* _get_level_str(EM_LOG_LEVELS level) {
 	// --------------------------------------------------------
 	switch (level) {
 	case LOG_LVL_SILENT:
-		return " Silent  : ";
+		return TEXT(" Silent  : ");
 	case LOG_LVL_OUTPUT:
-		return " Output  : ";
+		return TEXT(" Output  : ");
 	case LOG_LVL_USER:
-		return " User    : ";
+		return TEXT(" User    : ");
 	case LOG_LVL_FATAL:
-		return " Fatal   : ";
+		return TEXT(" Fatal   : ");
 	case LOG_LVL_ERROR:
-		return " Error   : ";
+		return TEXT(" Error   : ");
 	case LOG_LVL_WARNING:
-		return " Warnning: ";
+		return TEXT(" Warnning: ");
 	case LOG_LVL_INFO:
-		return " Info    : ";
+		return TEXT(" Info    : ");
 	case LOG_LVL_DEBUG:
-		return " Debug   : ";
+		return TEXT(" Debug   : ");
 	case LOG_LVL_DIDO:
-		return " DIDO    : ";
+		return TEXT(" DIDO    : ");
 	case LOG_LVL_LOW:
-		return " LOW     : ";
+		return TEXT(" LOW     : ");
 	default:
 		break;
-		return " LOW     : ";
+		return TEXT(" LOW     : ");
 	}
 	// --------------------------------------------------------
-	return " Unknow  : ";
+	return TEXT(" Unknow  : ");
 }
 
 // ---------------------------------------------------------------------------
 #define LOG_MAX_BUF_LEN													(1024*4)
+#define LOG_MAX_PATH_LEN												(256)
 // ---------------------------------------------------------------------------
 class TLog {
 private:
 	EM_LOG_LEVELS Log_Level;
 	void* File_Handle;
-	TCHAR DataTime[64];
-	TCHAR FileName[256];
+	TCHAR DataTime[LOG_MAX_PATH_LEN];
+	TCHAR FileName[LOG_MAX_PATH_LEN];
 	TCHAR Log_Buf[LOG_MAX_BUF_LEN];
 	TCHAR Log_Text[LOG_MAX_BUF_LEN];
 
@@ -64,7 +65,7 @@ private:
 	bool __fastcall _write_log(const TCHAR* text, size_t len);
 
 #ifdef M_SEND_MSG_SELF
-	TCHAR AppName[256];
+	TCHAR AppName[LOG_MAX_PATH_LEN];
 	HWND hHandle;
 	HWND __fastcall _find_win_handle_with_app_name(const TCHAR* app_name);
 #endif
@@ -73,19 +74,19 @@ public:
 	void __fastcall SendMsg(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 	void __fastcall SendLog(const TCHAR* slog,EM_LOG_LEVELS level);
 #endif
-	void PrintLog(EM_LOG_LEVELS level, const TCHAR*format, ...);
+	void PrintLog(EM_LOG_LEVELS level, const TCHAR *format, ...);
 	TLog(const TCHAR* filename, const TCHAR* app_name,EM_LOG_LEVELS level = LOG_LVL_SILENT);
 	~TLog();
 };
 // ---------------------------------------------------------------------------
-#define LOG_OUTPUT(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_OUTPUT,__VA_ARGS__);
-#define LOG_USER(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_USER,__VA_ARGS__);
-#define LOG_FATAL(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_FATAL,__VA_ARGS__);
-#define LOG_ERROR(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_ERROR,__VA_ARGS__);
-#define LOG_WARNING(...)       	if(pLog)pLog->PrintLog(LOG_LVL_WARNING,__VA_ARGS__);
-#define LOG_INFO(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_INFO,__VA_ARGS__);
-#define LOG_DEBUG(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_DEBUG,__VA_ARGS__);
-#define LOG_DIDO(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_DIDO,__VA_ARGS__);
-#define LOG_LOW(...)	       	if(pLog)pLog->PrintLog(LOG_LVL_LOW,__VA_ARGS__);
+#define LOG_OUTPUT(format,...)	       	if(pLog)pLog->PrintLog(LOG_LVL_OUTPUT,format,##__VA_ARGS__);
+#define LOG_USER(format,...)	       	if(pLog)pLog->PrintLog(LOG_LVL_USER,format,##__VA_ARGS__);
+#define LOG_FATAL(format,...)	       	if(pLog)pLog->PrintLog(LOG_LVL_FATAL,format,##__VA_ARGS__);
+#define LOG_ERROR(format,...)	       	if(pLog)pLog->PrintLog(LOG_LVL_ERROR,format,##__VA_ARGS__);
+#define LOG_WARNING(format,...)       	if(pLog)pLog->PrintLog(LOG_LVL_WARNING,format,##__VA_ARGS__);
+#define LOG_INFO(format,...)	       	if(pLog)pLog->PrintLog(LOG_LVL_INFO,format,##__VA_ARGS__);
+#define LOG_DEBUG(format,...)	       	if(pLog)pLog->PrintLog(LOG_LVL_DEBUG,format,##__VA_ARGS__);
+#define LOG_DIDO(format,...)	       	if(pLog)pLog->PrintLog(LOG_LVL_DIDO,format,##__VA_ARGS__);
+#define LOG_LOW(format,...)	       	if(pLog)pLog->PrintLog(LOG_LVL_LOW,format,##__VA_ARGS__);
 // ---------------------------------------------------------------------------
 #endif
