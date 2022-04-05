@@ -13,10 +13,31 @@ TLog::TLog(const TCHAR* filename, const TCHAR* app_name, EM_LOG_LEVELS level) {
 	Log_Level = level;
 	// --------------------------------------------------------
 	std::string newpath("");
+#ifdef UNICODE
+	swprintf(FileName, 100, L"%s", filename);
+	File_Handle = CreateFile((LPCWSTR)FileName, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, 0);
+#else
+	snprintf(FileName, 100, "%s", filename);
+	File_Handle = CreateFile((LPCSTR)FileName, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, 0);
+#endif
+	// --------------------------------------------------------	
+#ifdef UNICODE
+	char file_name[LOG_MAX_PATH_LEN] = { 0 };
+	int nChLen = WideCharToMultiByte(CP_ACP, 0, filename, -1, NULL, 0, NULL, NULL);	//获取转换后的char长度 长度为11 10个字符(4+2*3)+1个结束符
+	WideCharToMultiByte(CP_ACP, 0, filename, -1, file_name, nChLen, NULL, NULL);
+	GetPathInfo(file_name, 1, newpath);
+#else
 	GetPathInfo(filename, 1, newpath);
+#endif
 	// --------------------------------------------------------
 #ifdef M_SEND_MSG_SELF
-	snprintf(AppName, 256, app_name);
+#ifdef UNICODE
+	swprintf(AppName, LOG_MAX_PATH_LEN, filename);
+#else
+	snprintf(AppName, LOG_MAX_PATH_LEN, app_name);
+#endif
 #endif
 	// --------------------------------------------------------
 	if (!IsDirExist(newpath.c_str())) {
@@ -25,15 +46,7 @@ TLog::TLog(const TCHAR* filename, const TCHAR* app_name, EM_LOG_LEVELS level) {
 		// ------------------------------------------------
 	}
 	// --------------------------------------------------------
-#ifdef UNICODE
-	swprintf(FileName, 100, L"%S", filename);
-	File_Handle = CreateFile((LPCWSTR)FileName, GENERIC_READ | GENERIC_WRITE,
-		FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, 0);
-#else
-	snprintf(FileName, 100, "%s", filename);
-	File_Handle = CreateFile((LPCSTR)FileName, GENERIC_READ | GENERIC_WRITE,
-		FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, 0);
-#endif
+
 	// --------------------------------------------------------
 }
 
@@ -56,8 +69,8 @@ void __fastcall TLog::_init_all_vars(bool is_first) {
 	// --------------------------------------------------------
 	Log_Level = LOG_LVL_SILENT;
 
-	memset(DataTime, 0, 64);
-	memset(FileName, 0, 256);
+	memset(DataTime, 0, LOG_MAX_PATH_LEN);
+	memset(FileName, 0, LOG_MAX_PATH_LEN);
 	memset(Log_Buf, 0, LOG_MAX_BUF_LEN);
 	memset(Log_Text, 0, LOG_MAX_BUF_LEN);
 	// --------------------------------------------------------
@@ -70,14 +83,19 @@ void __fastcall TLog::_init_all_vars(bool is_first) {
 // ---------------------------------------------------------------------------
 const TCHAR* __fastcall TLog::_get_date_time(void) {
 	// --------------------------------------------
-	memset(DataTime, 0, 64);
+	memset(DataTime, 0, LOG_MAX_PATH_LEN);
 	// --------------------------------------------
 	// Windows
 	SYSTEMTIME tm;
 	GetLocalTime(&tm);
 	// --------------------------------------------
-	snprintf(DataTime, 64 - 1, "%04d-%02d-%02d %02d:%02d:%02d:%03d", tm.wYear,
+#ifdef UNICODE
+	_snwprintf(DataTime, LOG_MAX_PATH_LEN - 1, L"%04d-%02d-%02d %02d:%02d:%02d:%03d", tm.wYear,
 		tm.wMonth, tm.wDay, tm.wHour, tm.wMinute, tm.wSecond, tm.wMilliseconds);
+#else
+	snprintf(DataTime, LOG_MAX_PATH_LEN - 1, "%04d-%02d-%02d %02d:%02d:%02d:%03d", tm.wYear,
+		tm.wMonth, tm.wDay, tm.wHour, tm.wMinute, tm.wSecond, tm.wMilliseconds);
+#endif  
 	// --------------------------------------------
 	return DataTime;
 }
@@ -105,21 +123,31 @@ const TCHAR* __fastcall TLog::_printf_log_line_str(EM_LOG_LEVELS level,
 	if ((Log_Level < level) && (Log_Level != LOG_LVL_ERROR) &&
 		(Log_Level != LOG_LVL_FATAL) && (level != LOG_LVL_ERROR) &&
 		(level != LOG_LVL_FATAL)) {
-		return "";
+		return TEXT("");
 	}
 	// --------------------------------------------------------
 	memset(Log_Buf, 0, LOG_MAX_BUF_LEN);
 	// --------------------------------------------------------
 	try {
 		// ----------------------------------------------------
+#ifdef UNICODE
+		_snwprintf(Log_Buf, LOG_MAX_BUF_LEN, L"%s %s %s \r\n", _get_date_time(),
+			_get_level_str(level), text);
+#else
 		snprintf(Log_Buf, LOG_MAX_BUF_LEN, "%s %s %s \r\n", _get_date_time(),
 			_get_level_str(level), text);
+#endif
 		// ----------------------------------------------------
 	}
 	catch (...) {
 		// ----------------------------------------------------
+#ifdef UNICODE
+		_snwprintf(Log_Buf, LOG_MAX_BUF_LEN, L"%s %s %s\r\n", _get_date_time(),
+			_get_level_str(level), L"!!!Input variant args has bugs!!!");
+#else
 		snprintf(Log_Buf, LOG_MAX_BUF_LEN, "%s %s %s\r\n", _get_date_time(),
 			_get_level_str(level), "!!!Input variant args has bugs!!!");
+#endif
 		// ----------------------------------------------------
 	}
 	// --------------------------------------------------------
@@ -144,13 +172,17 @@ bool __fastcall TLog::_write_log(const TCHAR* text, size_t len) {
 }
 
 // ---------------------------------------------------------------------------
-void TLog::PrintLog(EM_LOG_LEVELS level, const TCHAR*format, ...) {
+void TLog::PrintLog(EM_LOG_LEVELS level, const TCHAR *format, ...) {
 	// --------------------------------------------------------
 	va_list ap;
 	va_start(ap, format);
-	memset(Log_Text, 0, LOG_MAX_BUF_LEN);
+	memset(Log_Text, 0, LOG_MAX_BUF_LEN*sizeof(TCHAR));
 	// --------------------------------------------------------
-	_vsntprintf(Log_Text, LOG_MAX_BUF_LEN, format, ap);
+#ifdef UNICODE	
+	_vsnwprintf(Log_Text, LOG_MAX_BUF_LEN - 1, format, ap);
+#else
+	_vsnprintf(Log_Text, LOG_MAX_BUF_LEN - 1, format, ap);
+#endif
 	// --------------------------------------------------------
 	_printf_log_line_str(level, Log_Text);
 	// --------------------------------------------------------
@@ -163,7 +195,12 @@ void TLog::PrintLog(EM_LOG_LEVELS level, const TCHAR*format, ...) {
 	}
 #endif
 	// --------------------------------------------------------
-	_write_log(Log_Buf, strlen(Log_Buf));
+#ifdef UNICODE
+	size_t len = wcslen(Log_Buf)*2;
+#else
+	size_t len = strlen(Log_Buf);
+#endif
+	_write_log(Log_Buf, len);
 	// --------------------------------------------------------
 	va_end(ap);
 	// --------------------------------------------------------
@@ -191,14 +228,17 @@ void __fastcall TLog::SendMsg(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 void __fastcall TLog::SendLog(const TCHAR* slog, EM_LOG_LEVELS level) {
 	// --------------------------------------------------------
 	TCHAR str[LOG_MAX_BUF_LEN] = {0};
+	COPYDATASTRUCT mydata = { 0 };
 	// --------------------------------------------------------
+#ifdef UNICODE
+	_snwprintf(str, LOG_MAX_BUF_LEN, L"%s", slog);
+	int len = wcslen(str);
+#else
 	snprintf(str, LOG_MAX_BUF_LEN, "%s", slog);
-	// --------------------------------------------------------
 	int len = strlen(str);
+#endif
 	str[len - 2] = '\0';
 	// --------------------------------------------------------
-	COPYDATASTRUCT mydata = {0};
-
 	switch (level) {
 	case LOG_LVL_ERROR:
 		mydata.dwData = 0x01;
@@ -223,7 +263,7 @@ void __fastcall TLog::SendLog(const TCHAR* slog, EM_LOG_LEVELS level) {
 		break;
 	}
 
-	mydata.cbData = strlen(str);
+	mydata.cbData = len;
 	mydata.lpData = (void*)str;
 	// --------------------------------------------------------
 	SendMsg(hHandle, WM_COPYDATA, NULL, (LPARAM) & mydata);
